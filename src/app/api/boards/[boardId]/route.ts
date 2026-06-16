@@ -16,15 +16,16 @@ const postSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { boardId: string } }
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
+  const { boardId } = await params;
   const { searchParams } = new URL(req.url);
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
   const perPage = parseInt(searchParams.get("perPage") ?? "15", 10);
   const sw = searchParams.get("sw") ?? "";
 
   const where = {
-    boardId: params.boardId,
+    boardId,
     ...(sw ? { subject: { contains: sw } } : {}),
   };
 
@@ -53,8 +54,9 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { boardId: string } }
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
+  const { boardId } = await params;
   const session = await auth();
   const body = await req.json();
   const parsed = postSchema.safeParse(body);
@@ -62,7 +64,7 @@ export async function POST(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const board = await db.boardInfo.findUnique({ where: { boardId: params.boardId } });
+  const board = await db.boardInfo.findUnique({ where: { boardId } });
   if (!board) return NextResponse.json({ error: "Board not found" }, { status: 404 });
 
   if (board.adminOnly && !session?.user) {
@@ -71,7 +73,7 @@ export async function POST(
 
   const post = await db.boardPost.create({
     data: {
-      boardId: params.boardId,
+      boardId,
       subject: parsed.data.subject,
       contents: parsed.data.contents,
       authorName: parsed.data.authorName,
@@ -80,7 +82,7 @@ export async function POST(
       category: parsed.data.category,
       useHtml: parsed.data.useHtml ?? false,
       userId: (session?.user as { id?: string })?.id ?? null,
-      ip: req.headers.get("x-forwarded-for") ?? req.ip ?? "",
+      ip: req.headers.get("x-forwarded-for") ?? "",
     },
   });
 

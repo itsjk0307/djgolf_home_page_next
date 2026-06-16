@@ -7,46 +7,68 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 
-interface Props {
-  params: Promise<{ id: string; locale: string }>;
-}
+const BOARD_ID = "notice";
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string; locale: string }> }): Promise<Metadata> {
   const { id, locale } = await params;
-  const post = await db.boardPost.findUnique({ where: { id: parseInt(id) } });
+  const parsedId = parseInt(id, 10);
   const t = await getTranslations({ locale, namespace: "Board" });
-  return { title: post?.subject ?? t("postFallback") };
-}
-
-export default async function NewsViewPage({ params }: Props) {
-  const { id } = await params;
-  const postId = parseInt(id);
-  if (isNaN(postId)) notFound();
-
-  const t = await getTranslations("Board");
-
-  await db.boardPost.update({ where: { id: postId }, data: { hit: { increment: 1 } } });
+  if (isNaN(parsedId)) {
+    return { title: t("postFallback") };
+  }
 
   const post = await db.boardPost.findUnique({
-    where: { id: postId },
-    include: { files: true, comments: { orderBy: { createdAt: "asc" } } },
+    where: { id: parsedId },
+    select: { subject: true, boardId: true },
   });
-  if (!post || post.boardId !== "notice") notFound();
+  if (!post || post.boardId !== BOARD_ID) {
+    return { title: t("postFallback") };
+  }
+  return { title: post.subject };
+}
+
+export default async function NewsViewPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+  const { id, locale } = await params;
+  const parsedId = parseInt(id, 10);
+  if (isNaN(parsedId)) notFound();
+
+  const t = await getTranslations({ locale, namespace: "Board" });
+
+  const post = await db.boardPost.findUnique({
+    where: { id: parsedId },
+    select: {
+      id: true,
+      boardId: true,
+      subject: true,
+      contents: true,
+      useHtml: true,
+      authorName: true,
+      createdAt: true,
+      hit: true,
+      files: { select: { id: true, origName: true } },
+    },
+  });
+  if (!post || post.boardId !== BOARD_ID) notFound();
+
+  await db.boardPost.update({
+    where: { id: parsedId },
+    data: { hit: { increment: 1 } },
+  });
 
   const [prevPost, nextPost] = await Promise.all([
     db.boardPost.findFirst({
-      where: { boardId: "notice", id: { lt: postId } },
+      where: { boardId: BOARD_ID, id: { lt: parsedId } },
       orderBy: { id: "desc" },
       select: { id: true, subject: true },
     }),
     db.boardPost.findFirst({
-      where: { boardId: "notice", id: { gt: postId } },
+      where: { boardId: BOARD_ID, id: { gt: parsedId } },
       orderBy: { id: "asc" },
       select: { id: true, subject: true },
     }),
   ]);
 
-  const tCommunity = await getTranslations("Community.news");
+  const tCommunity = await getTranslations({ locale, namespace: "Community.news" });
 
   return (
     <SubPageLayout
@@ -61,9 +83,15 @@ export default async function NewsViewPage({ params }: Props) {
         <div className="border-b px-4 py-5">
           <h2 className="text-xl font-bold text-gray-900">{post.subject}</h2>
           <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
-            <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" />{post.authorName}</span>
-            <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatDateTime(post.createdAt)}</span>
-            <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" />{post.hit}</span>
+            <span className="flex items-center gap-1">
+              <User className="w-3.5 h-3.5" />{post.authorName}
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" />{formatDateTime(post.createdAt)}
+            </span>
+            <span className="flex items-center gap-1">
+              <Eye className="w-3.5 h-3.5" />{post.hit + 1}
+            </span>
           </div>
         </div>
 

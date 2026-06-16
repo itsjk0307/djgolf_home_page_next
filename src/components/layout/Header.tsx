@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Menu, X, ChevronDown } from "lucide-react";
 import Image from "next/image";
@@ -12,9 +12,28 @@ import { LocaleSwitcher } from "./LocaleSwitcher";
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
   const { data: session } = useSession();
   const t = useTranslations("Nav");
   const pathname = usePathname();
+  const mobileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (mobileRef.current && !mobileRef.current.contains(e.target as Node)) {
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [mobileOpen]);
 
   const navItems = [
     {
@@ -99,121 +118,216 @@ export function Header() {
   ];
 
   return (
-    <header className="w-full bg-white shadow-md sticky top-0 z-50">
-      {/* Top bar */}
-      <div className="bg-golf-dark text-white text-xs py-1">
-        <div className="max-w-7xl mx-auto px-4 flex justify-end gap-4 items-center">
-          <LocaleSwitcher />
-          {session ? (
-            <>
-              <span className="text-gray-300">{t("greeting", { name: session.user?.name })}</span>
-              <Link href="/mypage" className="hover:text-golf-gold">{t("mypage")}</Link>
-              <button onClick={() => signOut()} className="hover:text-golf-gold">{t("logout")}</button>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="hover:text-golf-gold">{t("login")}</Link>
-              <Link href="/register" className="hover:text-golf-gold">{t("register")}</Link>
-            </>
-          )}
-        </div>
-      </div>
+    <>
+      <header
+        className={cn(
+          "w-full sticky top-0 z-50 bg-[#f5f5f5] transition-shadow duration-300",
+          scrolled ? "shadow-sm" : ""
+        )}
+      >
+        <div className="max-w-screen-2xl mx-auto px-8">
+          <div className="relative flex items-center justify-between h-20">
+            {/* Logo */}
+            <Link href="/" className="flex items-center shrink-0">
+              <Image
+                src="/images/logo.png"
+                alt={t("companyName")}
+                width={120}
+                height={40}
+                priority
+                className="h-12 w-auto object-contain"
+              />
+            </Link>
 
-      {/* Main nav */}
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/images/logo.png"
-              alt={t("companyName")}
-              width={120}
-              height={40}
-              priority
-              className="h-10 w-auto object-contain"
-            />
-          </Link>
-
-          {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {navItems.map((item) => (
-              <div
-                key={item.key}
-                className="relative group"
-                onMouseEnter={() => setActiveMenu(item.key)}
-                onMouseLeave={() => setActiveMenu(null)}
-              >
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-1 px-4 py-5 text-sm font-medium text-gray-700 hover:text-golf-green transition-colors",
-                    activeMenu === item.key && "text-golf-green"
-                  )}
-                >
-                  {t(item.key)}
-                  <ChevronDown className="w-3 h-3" />
-                </Link>
-
-                {/* Dropdown */}
-                <div className="absolute top-full left-0 bg-white shadow-lg border-t-2 border-golf-green min-w-[180px] hidden group-hover:block">
-                  {item.children?.map((child) => (
+            {/* Desktop nav */}
+            <nav className="hidden lg:flex items-center gap-8 lg:gap-10 absolute left-1/2 -translate-x-1/2">
+              {navItems.map((item) => {
+                const isActive = pathname.startsWith("/" + item.key);
+                return (
+                  <div
+                    key={item.key}
+                    className="relative group"
+                    onMouseEnter={() => setActiveMenu(item.key)}
+                    onMouseLeave={() => setActiveMenu(null)}
+                  >
                     <Link
-                      key={child.key}
-                      href={child.href}
-                      className="block px-4 py-2.5 text-sm text-gray-600 hover:bg-golf-green hover:text-white transition-colors"
+                      href={item.href}
+                      className={cn(
+                        "relative flex items-center gap-1 px-2 py-5 text-[13px] font-medium whitespace-nowrap transition-colors",
+                        isActive
+                          ? "text-[#2d5a27]"
+                          : "text-gray-700 hover:text-[#2d5a27]"
+                      )}
                     >
-                      {t(child.key)}
+                      {t(item.key)}
+                      <ChevronDown
+                        className={cn(
+                          "w-3 h-3 transition-transform duration-200",
+                          activeMenu === item.key && "rotate-180"
+                        )}
+                      />
                     </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </nav>
 
-          {/* Mobile toggle */}
-          <button
-            className="lg:hidden p-2 text-gray-700"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
+                    {/* Dropdown */}
+                    <div
+                      className={cn(
+                        "absolute top-full left-0 bg-white border border-gray-100 shadow-lg min-w-[200px] rounded-b-xl overflow-hidden",
+                        "transition-all duration-200 origin-top",
+                        activeMenu === item.key
+                          ? "opacity-100 scale-y-100 pointer-events-auto"
+                          : "opacity-0 scale-y-95 pointer-events-none"
+                      )}
+                    >
+                      {item.children?.map((child) => (
+                        <Link
+                          key={child.key}
+                          href={child.href}
+                          className="flex items-center gap-2 px-4 py-3 text-sm text-gray-600 hover:text-[#2d5a27] hover:bg-gray-50 border-l-2 border-transparent hover:border-[#2d5a27] transition-all"
+                        >
+                          {t(child.key)}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </nav>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="lg:hidden bg-white border-t">
-          {navItems.map((item) => (
-            <div key={item.key}>
-              <button
-                className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 border-b"
-                onClick={() =>
-                  setActiveMenu(activeMenu === item.key ? null : item.key)
-                }
-              >
-                {t(item.key)}
-                <ChevronDown
-                  className={cn(
-                    "w-4 h-4 transition-transform",
-                    activeMenu === item.key && "rotate-180"
-                  )}
-                />
-              </button>
-              {activeMenu === item.key &&
-                item.children?.map((child) => (
+            {/* Right: lang + auth */}
+            <div className="hidden lg:flex items-center gap-3">
+              <LocaleSwitcher />
+              <div className="w-px h-4 bg-gray-200" />
+              {session ? (
+                <>
                   <Link
-                    key={child.key}
-                    href={child.href}
-                    className="block pl-8 pr-4 py-2.5 text-sm text-gray-600 bg-gray-50 border-b hover:bg-golf-green hover:text-white"
+                    href="/mypage"
+                    className="text-xs text-gray-600 hover:text-[#2d5a27] transition-colors"
+                  >
+                    {t("mypage")}
+                  </Link>
+                  <button
+                    onClick={() => signOut()}
+                    className="text-xs text-gray-600 hover:text-[#2d5a27] transition-colors"
+                  >
+                    {t("logout")}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="text-xs text-gray-600 hover:text-[#2d5a27] transition-colors"
+                  >
+                    {t("login")}
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="text-xs bg-[#2d5a27] text-white px-3 py-1.5 rounded-full hover:bg-[#1a3a16] transition-colors"
+                  >
+                    {t("register")}
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Mobile toggle */}
+            <button
+              className="lg:hidden p-2 text-gray-600 hover:text-[#2d5a27] transition-colors"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+
+      </header>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div ref={mobileRef} className="fixed inset-0 bg-[#f5f5f5] z-40 overflow-y-auto pt-[80px] lg:hidden">
+          {/* Lang + auth row */}
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-white/60">
+            <LocaleSwitcher />
+            <div className="flex items-center gap-3">
+              {session ? (
+                <>
+                  <Link
+                    href="/mypage"
+                    className="text-xs text-gray-600"
                     onClick={() => setMobileOpen(false)}
                   >
-                    {t(child.key)}
+                    {t("mypage")}
                   </Link>
-                ))}
+                  <button
+                    onClick={() => {
+                      signOut();
+                      setMobileOpen(false);
+                    }}
+                    className="text-xs text-gray-600"
+                  >
+                    {t("logout")}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="text-xs text-gray-600"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {t("login")}
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="text-xs bg-[#2d5a27] text-white px-3 py-1 rounded-full"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {t("register")}
+                  </Link>
+                </>
+              )}
             </div>
-          ))}
+          </div>
+
+          {/* Nav items */}
+          <div className="px-4 pb-8">
+            {navItems.map((item) => (
+              <div key={item.key} className="border-b border-gray-100">
+                <button
+                  className="w-full flex items-center justify-between px-2 min-h-[48px] text-sm font-medium text-gray-700 hover:text-[#2d5a27] transition-colors"
+                  onClick={() =>
+                    setActiveMenu(activeMenu === item.key ? null : item.key)
+                  }
+                >
+                  <span>{t(item.key)}</span>
+                  <ChevronDown
+                    className={cn(
+                      "w-4 h-4 transition-transform",
+                      activeMenu === item.key && "rotate-180"
+                    )}
+                  />
+                </button>
+                {activeMenu === item.key && (
+                  <div className="bg-gray-50 rounded-lg mb-2">
+                    {item.children?.map((child) => (
+                      <Link
+                        key={child.key}
+                        href={child.href}
+                        className="flex items-center gap-2 pl-6 pr-4 min-h-[44px] text-sm text-gray-500 hover:text-[#2d5a27] transition-colors"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        <span className="w-1 h-1 rounded-full bg-[#2d5a27]/30 shrink-0" />
+                        {t(child.key)}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
-    </header>
+    </>
   );
 }

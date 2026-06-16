@@ -44,16 +44,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.userId = (user as { userId: string }).userId;
-        token.isAdmin = (user as { isAdmin: boolean }).isAdmin;
+        token.userId = (user as unknown as { userId: string }).userId;
+        token.isAdmin = (user as unknown as { isAdmin: boolean }).isAdmin;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub!;
-        (session.user as { userId: string }).userId = token.userId as string;
-        (session.user as { isAdmin: boolean }).isAdmin = token.isAdmin as boolean;
+        (session.user as unknown as { userId: string }).userId = token.userId as string;
+        (session.user as unknown as { isAdmin: boolean }).isAdmin = token.isAdmin as boolean;
       }
       return session;
     },

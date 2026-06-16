@@ -46,8 +46,12 @@ const config: Config = {
         golf: {
           green: "#2d5a27",
           "green-light": "#4a8a42",
+          "green-dark": "#1a3a16",
           gold: "#c9a84c",
-          "dark": "#1a1a2e",
+          "gold-light": "#e8c96a",
+          dark: "#0f1624",
+          "dark-mid": "#1a2235",
+          "dark-light": "#243048",
         },
       },
       borderRadius: {
@@ -56,7 +60,7 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "sans-serif"],
+        sans: ["Pretendard", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
@@ -67,10 +71,20 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "gradient-shift": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
+        "bounce-slow": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "gradient-shift": "gradient-shift 8s ease infinite",
+        "bounce-slow": "bounce-slow 2s ease-in-out infinite",
       },
     },
   },
