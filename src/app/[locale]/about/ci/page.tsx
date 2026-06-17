@@ -1,5 +1,6 @@
 import { SubPageLayout } from "@/components/layout/SubPageLayout";
 import { getTranslations } from "next-intl/server";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -17,13 +18,13 @@ export default async function CiPage() {
 
   const affiliates = ["a1", "a2", "a3", "a4", "a5", "a6", "a7"] as const;
   const colors = [
-    { hex: "#13a89e", label: "① " },
-    { hex: "#25aae1", label: "② " },
-    { hex: "#0e76bc", label: "③ " },
-    { hex: "#283891", label: "④ " },
-    { hex: "#056839", label: "⑤ " },
-    { hex: "#39b54a", label: "⑥ " },
-    { hex: "#8dc63f", label: "⑦ " },
+    { hex: "#13a89e" },
+    { hex: "#25aae1" },
+    { hex: "#0e76bc" },
+    { hex: "#283891" },
+    { hex: "#056839" },
+    { hex: "#39b54a" },
+    { hex: "#8dc63f" },
   ];
 
   return (
@@ -37,8 +38,14 @@ export default async function CiPage() {
           {t("symbolTitle")}
         </h2>
         <div className="bg-gray-50 rounded-xl p-8 flex flex-col md:flex-row gap-8 items-start">
-          <div className="w-48 h-48 bg-white rounded-xl shadow flex items-center justify-center shrink-0">
-            <span className="text-gray-400 text-sm text-center px-4">{t("logoPlaceholder")}</span>
+          <div className="w-56 shrink-0 rounded-xl overflow-hidden shadow bg-white flex items-center justify-center p-4">
+            <Image
+              src="/images/legacy/ci.jpg"
+              alt={t("symbolTitle")}
+              width={200}
+              height={200}
+              className="object-contain w-full h-auto"
+            />
           </div>
           <div className="flex-1">
             <p className="text-gray-700 leading-relaxed mb-6">{t("symbolDesc")}</p>
@@ -84,8 +91,14 @@ export default async function CiPage() {
           {t("logotypeTitle")}
         </h2>
         <div className="bg-gray-50 rounded-xl p-8 flex flex-col md:flex-row gap-8 items-center">
-          <div className="w-64 h-20 bg-white rounded-lg shadow flex items-center justify-center shrink-0">
-            <span className="text-golf-green font-bold text-2xl">DAEJUNG GOLF</span>
+          <div className="shrink-0 rounded-lg overflow-hidden shadow bg-white p-4">
+            <Image
+              src="/images/legacy/ci2.jpg"
+              alt={t("logotypeTitle")}
+              width={280}
+              height={80}
+              className="object-contain h-auto"
+            />
           </div>
           <p className="text-gray-700 leading-relaxed">{t("logotypeDesc")}</p>
         </div>

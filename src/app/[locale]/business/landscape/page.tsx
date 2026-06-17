@@ -16,7 +16,7 @@ export async function generateMetadata({
 export default async function LandscapePage() {
   const t = await getTranslations("Business.landscape");
 
-  const turfTypes = ["turfType1", "turfType2", "turfType3", "turfType4", "turfType5"] as const;
+  const turfTypes = ["turfType1", "turfType2", "turfType3"] as const;
   const pineTypes = ["pineType1", "pineType2", "pineType3"] as const;
   const services = ["svc1", "svc2", "svc3", "svc4"] as const;
 
@@ -41,7 +41,7 @@ export default async function LandscapePage() {
               <p className="text-xs text-gray-500">{t("turfLoc")}</p>
             </div>
           </div>
-          <h4 className="font-semibold text-gray-800 mb-2 text-sm">품종</h4>
+          <h4 className="font-semibold text-gray-800 mb-2 text-sm">{t("varietiesTitle")}</h4>
           <ul className="space-y-1">
             {turfTypes.map((key) => (
               <li key={key} className="flex items-center gap-2 text-sm text-gray-600">
@@ -56,7 +56,7 @@ export default async function LandscapePage() {
         <div className="bg-gray-50 rounded-xl p-6">
           <h3 className="text-lg font-bold text-golf-green mb-3">{t("pineTitle")}</h3>
           <p className="text-gray-600 text-sm mb-4">{t("pineDesc")}</p>
-          <h4 className="font-semibold text-gray-800 mb-2 text-sm">품종</h4>
+          <h4 className="font-semibold text-gray-800 mb-2 text-sm">{t("varietiesTitle")}</h4>
           <ul className="space-y-1">
             {pineTypes.map((key) => (
               <li key={key} className="flex items-center gap-2 text-sm text-gray-600">

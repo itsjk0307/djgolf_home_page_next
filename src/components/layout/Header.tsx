@@ -196,6 +196,7 @@ export function Header() {
             {/* Right: lang + auth */}
             <div className="hidden lg:flex items-center gap-3">
               <LocaleSwitcher />
+              {/* HIDDEN_UNTIL_SHOP_LAUNCH — uncomment to re-enable
               <div className="w-px h-4 bg-gray-200" />
               {session ? (
                 <>
@@ -228,6 +229,7 @@ export function Header() {
                   </Link>
                 </>
               )}
+              */}
             </div>
 
             {/* Mobile toggle */}
@@ -249,6 +251,7 @@ export function Header() {
           {/* Lang + auth row */}
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-white/60">
             <LocaleSwitcher />
+            {/* HIDDEN_UNTIL_SHOP_LAUNCH — uncomment to re-enable
             <div className="flex items-center gap-3">
               {session ? (
                 <>
@@ -288,6 +291,7 @@ export function Header() {
                 </>
               )}
             </div>
+            */}
           </div>
 
           {/* Nav items */}

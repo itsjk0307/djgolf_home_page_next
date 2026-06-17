@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   icons: {
-    icon: [{ url: "/images/daejung-symbol.jpg", type: "image/jpeg" }],
-    shortcut: "/images/daejung-symbol.jpg",
-    apple: "/images/daejung-symbol.jpg",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
   },
 };
 

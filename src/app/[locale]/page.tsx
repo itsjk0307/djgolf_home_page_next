@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { AffiliatesSlider } from "@/components/AffiliatesSlider";
+import CountUp from "@/components/CountUp";
 import CourseSlider from "@/components/CourseSlider";
 import { db } from "@/lib/db";
 import { formatDate, isNew } from "@/lib/utils";
@@ -194,10 +195,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { Icon: TrendingUp, num: t("stat1Num"), unit: t("stat1Unit"), label: t("stat1Label") },
-              { Icon: Flag,       num: t("stat2Num"), unit: t("stat2Unit"), label: t("stat2Label") },
-              { Icon: Users,      num: t("stat3Num"), unit: t("stat3Unit"), label: t("stat3Label") },
-              { Icon: Building2,  num: t("stat4Num"), unit: t("stat4Unit"), label: t("stat4Label") },
+              { Icon: TrendingUp, end: 550, prefix: t("stat1Prefix"), suffix: "",  unit: t("stat1Unit"), label: t("stat1Label") },
+              { Icon: Flag,       end: 30,  prefix: t("stat2Prefix"), suffix: "",  unit: t("stat2Unit"), label: t("stat2Label") },
+              { Icon: Users,      end: 600, prefix: "",                suffix: "+", unit: t("stat3Unit"), label: t("stat3Label") },
+              { Icon: Building2,  end: 7,   prefix: "",                suffix: "",  unit: t("stat4Unit"), label: t("stat4Label") },
             ].map((stat) => (
               <div
                 key={stat.label}
@@ -207,7 +208,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   <stat.Icon className="w-8 h-8 text-[#2d5a27]" />
                 </div>
                 <div className="text-2xl md:text-3xl font-black text-[#1a1a2e] whitespace-nowrap leading-none mb-1">
-                  {stat.num}
+                  {stat.prefix}<CountUp end={stat.end} />{stat.suffix}
                   <span className="text-[#c9a84c] ml-1">{stat.unit}</span>
                 </div>
                 <div className="w-8 h-[2px] bg-[#2d5a27] my-3" />
